@@ -11,9 +11,24 @@
             "program": "${workspaceFolder}/day2/main.ts",
             "cwd": "${workspaceFolder}",
             "env": {},
-            "runtimeExecutable": "C:\\Users\\fcalv\\deno\\bin\\deno.EXE",
+            "runtimeExecutable": "deno.EXE",
             "runtimeArgs": [
                 "run",
+                "--inspect-wait",
+                "--allow-all"
+            ],
+            "attachSimplePort": 9229
+        },
+        {
+            "request": "launch",
+            "name": "Test Program",
+            "type": "node",
+            "program": "${workspaceFolder}/day2/test.ts",
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "runtimeExecutable": "deno.EXE",
+            "runtimeArgs": [
+                "test",
                 "--inspect-wait",
                 "--allow-all"
             ],
