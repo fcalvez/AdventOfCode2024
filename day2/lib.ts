@@ -32,8 +32,9 @@ export function isLevelValid(level: number[], allowError: boolean): boolean {
         // direction change ?
         if (sign !== firstSign || delta > 3) {
             if (allowError) {
-                return isLevelValid(safeRemove(level,i-1), false) 
-                || isLevelValid(safeRemove(level,i), false);
+                return isLevelValid(safeRemove(level,i-2), false)
+                || isLevelValid(safeRemove(level,i-1), false) 
+                || isLevelValid(safeRemove(level,i), false);                
             }
             return false;
         }
