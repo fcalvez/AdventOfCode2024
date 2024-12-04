@@ -8,7 +8,7 @@
             "request": "launch",
             "name": "Launch Program",
             "type": "node",
-            "program": "${workspaceFolder}/day4/main2.ts",
+            "program": "${workspaceFolder}/day5/main.ts",
             "cwd": "${workspaceFolder}",
             "env": {},
             "runtimeExecutable": "deno.EXE",
