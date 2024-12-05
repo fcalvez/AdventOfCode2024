@@ -1,6 +1,6 @@
 import { readLines } from "../utils.ts";
 
-const lines = await readLines("day5\\input.txt");
+const lines = await readLines("day5\\input1.txt");
 console.log(`Found ${lines.length} lines`);
 
 // Parse orders
@@ -33,22 +33,39 @@ function isUpdateValid(update: number[]): boolean {
     const order = orders[i];
     const p1 = update.indexOf(order[0]);
     const p2 = update.indexOf(order[1]);
-    if (p1 >= 0 && p2 >= 0 && p1 >= p2)
+    if (p1 >= 0 && p2 >= 0 && p1 >= p2) {
+        console.log(`> Update ${update} is invalid because ${order} is not respected`);
         return false;
+    };
   }
   return true;
 }
 
-// Validate updates
-let total = 0;
-updates.forEach((update) => {
-  if (isUpdateValid(update)) {
-    const midNumber = update[(update.length - 1) / 2];
-    total += midNumber;
-    console.log(`Update ${update} is valid, mid number is ${midNumber}`);
-  } else {
-    console.log(`Update ${update} is invalid`);
-  }
-});
+function arrangeUpdate(update: number[]):number[] {
+    const result = [...update];
+    for (let i = 0; i < orders.length; i++) {
+        const order = orders[i];
+        const p1 = update.indexOf(order[0]);
+        const p2 = update.indexOf(order[1]);
+        if (p1 >= 0 && p2 >= 0 && p1 >= p2) {
+            // swap
+            [result[p1], result[p2]] = [result[p2], result[p1]];
+        };
+      }
+      return result;
+}
 
-console.log(`Total=${total}`);
+// Validate updates
+let total2 = 0;
+for(let i=0; i<updates.length; i++) {
+    const update = updates[i];
+    let newUpdate = [...update];
+    while(!isUpdateValid(newUpdate)) {
+        newUpdate = arrangeUpdate(newUpdate);
+    }
+    const midNumber = newUpdate[(newUpdate.length - 1) / 2];
+    console.log(`+ Update ${newUpdate} is valid, mid number is ${midNumber}`);
+    total2 += midNumber;
+};
+
+console.log(`Total2=${total2}`);
