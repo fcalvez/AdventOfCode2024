@@ -1,6 +1,6 @@
 export async function readLines(filePath: string): Promise<string[]> {
   const text = await Deno.readTextFile(filePath);
-  return text.split("\n").filter(l => l.length > 1);
+  return text.split("\n") /*.filter(l => l.length > 1) */;
 }
 
 export function extractNumbers(line: string): number[] {
