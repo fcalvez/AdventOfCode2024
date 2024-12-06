@@ -3,11 +3,34 @@ import { readLines } from "../utils.ts";
 const lines = await readLines("day6\\input.txt");
 console.log(`Found ${lines.length} lines`);
 
+enum StatusCode {
+    none = 0,
+    start = 0x40,
+    obstacle = 0x10,
+    newObstacle = 0x20,
+    top = 1,
+    right = 2,
+    down = 4,
+    left = 8,
+}
+
+// items map
+function charToNum(c:string):StatusCode {
+    switch (c) {
+        case '^':
+            return StatusCode.start;
+        case '#':
+            return StatusCode.obstacle;
+        default:
+            return StatusCode.none;
+    }
+}
+
 // create the map
-const globalMap: string[][] = [];
+const globalMap: StatusCode[][] = [];
 lines.forEach((line) => {
     if (line.length > 1) {
-        globalMap.push(line.slice(0, -1).split(""));
+        globalMap.push(line.slice(0, -1).split("").map(x => charToNum(x)));
     }
 });
 
@@ -19,7 +42,7 @@ const tx = globalMap[0].length;
 let startX = -1;
 let startY = -1;
 for (startY = 0; startY < globalMap.length && startX === -1; startY++) {
-    startX = globalMap[startY].indexOf("^");
+    startX = globalMap[startY].indexOf(StatusCode.start);
 }
 startY--;
 console.log(`Initial pos = ${startX},${startY}`);
@@ -27,13 +50,16 @@ console.log(`Initial pos = ${startX},${startY}`);
 // Directions
 const dirx = [0, 1, 0, -1];
 const diry = [-1, 0, 1, 0];
-const dirSymbol = ["1", "2", "3", "4", "+"];
+const dirSymbol = [StatusCode.top, StatusCode.right, StatusCode.down, StatusCode.left];
 
 // display
-function displayMap(map: string[][]): void {
+function displayMap(map: StatusCode[][]): void {
     map.forEach((line) => {
-        console.log(line.join(""));
+        console.log(displayLine(line));
     });
+}
+function displayLine(line: StatusCode[]) : string {
+    return line.map(x => x === StatusCode.none ? ' .' : x.toString(16).padStart(2,' ')).join(' ');
 }
 
 // Moving
@@ -42,20 +68,15 @@ const inside = (x: number, y: number): boolean =>
 
 // returns true if loop détected
 // returns false if deplacement end outside of map
-function testMap(map: string[][], debug: boolean): boolean {
+function testMap(map: StatusCode[][], debug: boolean): boolean {
     let isLoop = false;
     let x = startX;
     let y = startY;
     let dirIndex = 0;
 
     while (inside(x, y) && !isLoop) {
-        // mark position on map
-        if (dirSymbol.includes(map[y][x])) {
-            // cross
-            map[y][x] = dirSymbol[4];
-        } else {
-            map[y][x] = dirSymbol[dirIndex];
-        }
+        // mark
+        map[y][x] = map[y][x] | dirSymbol[dirIndex];
 
         if (debug) {
             displayMap(map);
@@ -68,7 +89,7 @@ function testMap(map: string[][], debug: boolean): boolean {
 
         if (inside(x1, y1)) {
             // obstacle
-            if (map[y1][x1] === "#" || map[y1][x1] === "O") {
+            if (map[y1][x1] & StatusCode.obstacle || map[y1][x1] & StatusCode.newObstacle) {
                 // can't go there
                 x1 = x;
                 y1 = y;
@@ -76,7 +97,7 @@ function testMap(map: string[][], debug: boolean): boolean {
                 dirIndex = (dirIndex + 1) % dirx.length;
 
                 // loop détected !
-            } else if (map[y1][x1] === dirSymbol[dirIndex]) {
+            } else if (map[y1][x1] & dirSymbol[dirIndex]) {
                 isLoop = true;
 
                 // continue to move
@@ -94,12 +115,16 @@ function testMap(map: string[][], debug: boolean): boolean {
     return isLoop;
 }
 
-function visitedPos(map: string[][]): number[][] {
+function visitedPos(map: StatusCode[][]): number[][] {
     const visited: number[][] = [];
     // list visited positions
     for (let y = 0; y < ty; y++) {
         for (let x = 0; x < tx; x++) {
-            if (dirSymbol.includes(map[y][x])) {
+            if (map[y][x] & StatusCode.down || 
+                map[y][x] & StatusCode.left ||
+                map[y][x] & StatusCode.right ||
+                map[y][x] & StatusCode.top) 
+            {
                 visited.push([x, y]);
             }
         }
@@ -107,8 +132,8 @@ function visitedPos(map: string[][]): number[][] {
     return visited;
 }
 
-function copyMap(map: string[][]): string[][] {
-    const result: string[][] = [];
+function copyMap(map: StatusCode[][]): StatusCode[][] {
+    const result: StatusCode[][] = [];
     map.forEach((row) => {
         result.push([...row]);
     });
@@ -124,23 +149,24 @@ console.log(" ");
 
 // try to put an obstacle on every visited position to create a loop
 let countLooped = 0;
-visited = [[81,16]];
+//visited = [[8,2]];
 for(let i=0; i<visited.length; i++) {
     const v = visited[i];
 
     const x = v[0];
     const y = v[1];
     const tempMap = copyMap(globalMap);
-    tempMap[y][x] = "O";
-    displayMap(tempMap);
+    tempMap[y][x] = StatusCode.newObstacle;
+    //displayMap(tempMap);
     console.log(`${i+1}/${visited.length} Obstacle ${x},${y}`);
-    const looped = testMap(tempMap, true);
-    console.log(`> Looped = ${looped}`);
-    displayMap(tempMap);
+    const looped = testMap(tempMap, false);
+    //console.log(`> Looped = ${looped}`);
+    //displayMap(tempMap);
     console.log(" ");
 
     if (looped) {
         //displayMap(tempMap);
+        console.log(`Loop for Obstacle ${x},${y}`);
         countLooped++;
     }
 }
